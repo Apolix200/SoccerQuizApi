@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Mvc;
+using SoccerQuizApi.Helper;
 using SoccerQuizApi.Models;
 using SoccerQuizApi.Services;
 
@@ -9,55 +11,79 @@ namespace SoccerQuizApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserService _usersService;
+        private readonly AdminHelper _adminHelper;
 
-        public UserController(UserService usersService) =>
+        public UserController(UserService usersService, AdminHelper adminHelper)
+        {
             _usersService = usersService;
+            _adminHelper = adminHelper;
+        }
 
         [HttpGet]
-        public async Task<List<User>> Get() =>
-            await _usersService.GetAsync();
-
-        [HttpGet("{id:length(24)}")]
-        public async Task<ActionResult<User>> Get(string id)
+        public async Task<IEnumerable<User>> Get(string adminId)
         {
-            var user = await _usersService.GetAsync(id);
+            var users = await _usersService.GetAsync();
 
-            if (user is null)
+            if(await _adminHelper.NotAdmin(adminId))
             {
-                return NotFound();
+                return new List<User>();
             }
+
+            return users.Where(w => w.IsAdmin == false);          
+        }
+
+        [Route("[action]")]
+        [HttpPost]
+        public async Task<ActionResult<User>> Login(User newUser)
+        {
+            var users = await _usersService.GetAsync();
+
+            var user = users.FirstOrDefault(u => u.UserName == newUser.UserName);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            if (user.Password != newUser.Password)
+            {
+                return StatusCode(403);
+            }
+
+            user.Password = "";
 
             return user;
         }
 
+        [Route("[action]")]
         [HttpPost]
-        public async Task<IActionResult> Post(User newUser)
+        public async Task<IActionResult> Register(User newUser)
         {
-            await _usersService.CreateAsync(newUser);
+            var users = await _usersService.GetAsync();
 
-            return CreatedAtAction(nameof(Get), new { id = newUser.Id }, newUser);
-        }
-
-        [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, User updatedUser)
-        {
-            var user = await _usersService.GetAsync(id);
-
-            if (user is null)
+            if (users.Any(u => u.UserName == newUser.UserName))
             {
-                return NotFound();
+                return UnprocessableEntity();
+            }
+            if (newUser.Password.Length < 8)
+            {
+                return StatusCode(420);
             }
 
-            updatedUser.Id = user.Id;
+            newUser.IsAdmin = false;
 
-            await _usersService.UpdateAsync(id, updatedUser);
+            await _usersService.CreateAsync(newUser);
 
-            return NoContent();
+            return CreatedAtAction(nameof(Register), new { id = newUser.Id }, newUser);
         }
 
-        [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
+        [HttpDelete]
+        public async Task<IActionResult> Delete(string id, string adminId)
         {
+            if (await _adminHelper.NotAdmin(adminId))
+            {
+                return Unauthorized();
+            }
+
             var user = await _usersService.GetAsync(id);
 
             if (user is null)

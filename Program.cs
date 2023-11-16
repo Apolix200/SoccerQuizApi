@@ -1,6 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.IdentityModel.Tokens;
+using SoccerQuizApi.Helper;
 using SoccerQuizApi.Models;
 using SoccerQuizApi.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +13,9 @@ builder.Services.Configure<SoccerQuizDBSettings>(
     builder.Configuration.GetSection("SoccerQuizStoreDatabase"));
 
 builder.Services.AddSingleton<UserService>();
+builder.Services.AddSingleton<QuizService>();
+builder.Services.AddSingleton<ResultService>();
+builder.Services.AddSingleton<AdminHelper>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
