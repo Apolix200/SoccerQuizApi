@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using SoccerQuizApi.Helper;
@@ -57,12 +58,12 @@ namespace SoccerQuizApi.Controllers
         [HttpPut]
         public async Task<IActionResult> ActivateQuiz(string id, string adminId, bool isActive)
         {
-            var quiz = await _quizService.GetAsync(id);
-
             if (await _adminHelper.NotAdmin(adminId))
             {
                 return Unauthorized();
             }
+
+            var quiz = await _quizService.GetAsync(id);
 
             if (quiz is null)
             {
@@ -160,6 +161,19 @@ namespace SoccerQuizApi.Controllers
                     await _quizService.CreateAsync(quiz);
                 }
             }
+
+            return Ok();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Update(UserQuiz newQuiz)
+        {
+            if (await _adminHelper.NotAdmin(newQuiz.UserId))
+            {
+                return Unauthorized();
+            }
+
+            await _quizService.UpdateAsync(newQuiz.Quiz.Id, newQuiz.Quiz);
 
             return Ok();
         }

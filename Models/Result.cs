@@ -26,6 +26,10 @@ namespace SoccerQuizApi.Models
 
         [BsonElement("Score")]
         public int Score { get; set; }
+
+        [BsonElement("Created")]
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime Created { get; set; }
     }
 
 }

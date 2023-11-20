@@ -33,8 +33,20 @@ namespace SoccerQuizApi.Controllers
         }
 
         [Route("[action]")]
+        [HttpGet]
+        public async Task<IEnumerable<Result>> GetAll(string adminId)
+        {
+            if (await _adminHelper.NotAdmin(adminId))
+            {
+                return new List<Result>();
+            }
+
+            return await _resultService.GetAsync();
+        }
+
+        [Route("[action]")]
         [HttpPost]
-        public async Task<IActionResult> CalculateResult(UserQuizResult quizResult)
+        public async Task<IActionResult> CalculateResult(UserQuiz quizResult)
         {
             var quiz = await _quizService.GetAsync(quizResult.Quiz.Id);
             var user = await _userService.GetAsync(quizResult.UserId);
@@ -64,7 +76,8 @@ namespace SoccerQuizApi.Controllers
                 QuizName = quiz.QuizName,
                 UserName = user.UserName,
                 Answers = answers,
-                Score = score
+                Score = score,
+                Created = DateTime.Now,           
             };
 
             await _resultService.CreateAsync(result);
@@ -72,5 +85,25 @@ namespace SoccerQuizApi.Controllers
             return Ok();
         }
 
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete(string id, string adminId)
+        {
+            if (await _adminHelper.NotAdmin(adminId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _resultService.GetAsync(id);
+
+            if (result is null)
+            {
+                return NotFound();
+            }
+
+            await _resultService.RemoveAsync(id);
+
+            return NoContent();
+        }
     }
 }

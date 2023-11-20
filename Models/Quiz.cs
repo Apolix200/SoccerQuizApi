@@ -31,7 +31,7 @@ namespace SoccerQuizApi.Models
         public int CorrectAnswer { get; set; }
     }
 
-    public class UserQuizResult
+    public class UserQuiz
     {
         public Quiz Quiz { get; set; }
 
