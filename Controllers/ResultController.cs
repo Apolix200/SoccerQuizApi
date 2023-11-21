@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SoccerQuizApi.Helper;
 using SoccerQuizApi.Models;
@@ -42,6 +43,31 @@ namespace SoccerQuizApi.Controllers
             }
 
             return await _resultService.GetAsync();
+        }
+
+        [Route("[action]")]
+        [HttpGet]
+        public async Task<Quiz> GetQuizByResult(string id,string userId)
+        {
+            var result = await _resultService.GetAsync(id);
+
+            if (result is null)
+            {
+                return new Quiz();
+            }
+            if (result.UserId != userId && await _adminHelper.NotAdmin(userId))
+            {
+                return new Quiz();
+            }
+
+            var quiz = await _quizService.GetAsync(result.QuizId);
+
+            if (quiz is null)
+            {
+                return new Quiz();
+            }
+
+            return quiz;
         }
 
         [Route("[action]")]

@@ -35,5 +35,11 @@ namespace SoccerQuizApi.Services
 
         public async Task RemoveAsync(string id) =>
             await _resultCollection.DeleteOneAsync(x => x.Id == id);
+
+        public async Task RemoveManyByQuizAsync(string id) =>
+            await _resultCollection.DeleteManyAsync(x => x.QuizId == id);
+
+        public async Task RemoveManyByUserAsync(string id) =>
+            await _resultCollection.DeleteManyAsync(x => x.UserId == id);
     }
 }

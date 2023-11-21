@@ -12,11 +12,13 @@ namespace SoccerQuizApi.Controllers
     {
         private readonly UserService _usersService;
         private readonly AdminHelper _adminHelper;
+        private readonly ResultService _resultService;
 
-        public UserController(UserService usersService, AdminHelper adminHelper)
+        public UserController(UserService usersService, AdminHelper adminHelper, ResultService resultService)
         {
             _usersService = usersService;
             _adminHelper = adminHelper;
+            _resultService = resultService;
         }
 
         [HttpGet]
@@ -91,6 +93,7 @@ namespace SoccerQuizApi.Controllers
                 return NotFound();
             }
 
+            await _resultService.RemoveManyByUserAsync(id);
             await _usersService.RemoveAsync(id);
 
             return NoContent();

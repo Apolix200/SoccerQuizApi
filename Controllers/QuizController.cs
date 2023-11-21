@@ -16,11 +16,13 @@ namespace SoccerQuizApi.Controllers
 
         private readonly QuizService _quizService;
         private readonly AdminHelper _adminHelper;
+        private readonly ResultService _resultService;
 
-        public QuizController(QuizService quizService, AdminHelper adminHelper)
+        public QuizController(QuizService quizService, AdminHelper adminHelper, ResultService resultService)
         {
             _quizService = quizService;
             _adminHelper = adminHelper;
+            _resultService = resultService;
         }
 
         [HttpGet]
@@ -54,6 +56,19 @@ namespace SoccerQuizApi.Controllers
             return activeQuizes;
         }
 
+        [HttpPut]
+        public async Task<IActionResult> Update(UserQuiz newQuiz)
+        {
+            if (await _adminHelper.NotAdmin(newQuiz.UserId))
+            {
+                return Unauthorized();
+            }
+
+            await _quizService.UpdateAsync(newQuiz.Quiz.Id, newQuiz.Quiz);
+
+            return Ok();
+        }
+
         [Route("[action]")]
         [HttpPut]
         public async Task<IActionResult> ActivateQuiz(string id, string adminId, bool isActive)
@@ -73,6 +88,19 @@ namespace SoccerQuizApi.Controllers
             quiz.IsActive = !isActive;
 
             await _quizService.UpdateAsync(id, quiz);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(UserQuiz newQuiz)
+        {
+            if (await _adminHelper.NotAdmin(newQuiz.UserId))
+            {
+                return Unauthorized();
+            }
+
+            await _quizService.CreateAsync(newQuiz.Quiz);
 
             return Ok();
         }
@@ -165,19 +193,6 @@ namespace SoccerQuizApi.Controllers
             return Ok();
         }
 
-        [HttpPut]
-        public async Task<IActionResult> Update(UserQuiz newQuiz)
-        {
-            if (await _adminHelper.NotAdmin(newQuiz.UserId))
-            {
-                return Unauthorized();
-            }
-
-            await _quizService.UpdateAsync(newQuiz.Quiz.Id, newQuiz.Quiz);
-
-            return Ok();
-        }
-
         [HttpDelete]
         public async Task<IActionResult> Delete(string id, string adminId)
         {
@@ -193,6 +208,7 @@ namespace SoccerQuizApi.Controllers
                 return NotFound();
             }
 
+            await _resultService.RemoveManyByQuizAsync(id);
             await _quizService.RemoveAsync(id);
 
             return NoContent();
