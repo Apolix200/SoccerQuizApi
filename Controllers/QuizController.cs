@@ -53,6 +53,8 @@ namespace SoccerQuizApi.Controllers
                 }
             }
 
+            activeQuizes.FirstOrDefault().QuizName = "Micsoda?";
+
             return activeQuizes;
         }
 
