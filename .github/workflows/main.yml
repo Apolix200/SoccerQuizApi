@@ -1,0 +1,41 @@
+name: Deploy Api to Droplet
+
+on:
+  push:
+    branches: [main]
+  # pull_request:
+  #   branches: [main]
+  # workflow_dispatch:
+  #   branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Build Project
+      run: dotnet build --configuration Release
+
+    - name: dotnet publish
+      run: dotnet publish -c Release
+
+    - name: Login to Droplet and Deploy to Server
+      uses: garygrossgarten/github-action-scp@release
+      with:
+        local: bin\Release\net8.0\publish
+        remote: /var/www/soccerquiz/api
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: ${{ secrets.SSH_PORT }}
