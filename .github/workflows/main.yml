@@ -33,7 +33,7 @@ jobs:
     - name: Login to Droplet and Deploy to Server
       uses: garygrossgarten/github-action-scp@release
       with:
-        local: bin\Release\net8.0\publish
+        local: bin/Release/net8.0/publish
         remote: /var/www/soccerquiz/api
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
