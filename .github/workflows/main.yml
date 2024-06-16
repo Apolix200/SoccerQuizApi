@@ -25,10 +25,14 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Build Project
-      run: dotnet build --configuration Release /p:EnvironmentName=SoccerQuizApiProd
+      run: dotnet build --configuration Release
+      env: 
+          ASPNETCORE_ENVIRONMENT: Production
 
     - name: dotnet publish
       run: dotnet publish -c Release /p:EnvironmentName=SoccerQuizApiProd
+      env: 
+          ASPNETCORE_ENVIRONMENT: Production
 
     - name: Login to Droplet and Deploy to Server
       uses: garygrossgarten/github-action-scp@release
