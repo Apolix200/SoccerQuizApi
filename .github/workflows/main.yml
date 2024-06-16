@@ -28,7 +28,7 @@ jobs:
       uses: richardrigutins/replace-in-files@v2
       with:
         files: 'appsettings.Production.json'
-        search-text: 'ConnectionString'
+        search-text: 'DatabaseConnection'
         replacement-text: ${{ secrets.CONNECTION_STRING }}
 
     - name: Build Project
