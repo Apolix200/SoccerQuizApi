@@ -24,7 +24,7 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Replace Connection String
+    - name: Replace Connection String 
       uses: richardrigutins/replace-in-files@v2
       with:
         files: 'appsettings.Production.json'
