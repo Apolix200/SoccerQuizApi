@@ -24,6 +24,13 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    - name: Replace Connection String
+      uses: richardrigutins/replace-in-files@v2
+      with:
+        files: 'appsettings.Production.json'
+        search-text: "ConnectionString"
+        replacement-text: ${{ secrets.CONNECTION_STRING }}
+
     - name: Build Project
       run: dotnet build --configuration Release
       env: 
