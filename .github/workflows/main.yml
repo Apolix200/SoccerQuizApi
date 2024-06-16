@@ -24,11 +24,22 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    - name: Replace Connection String
+      uses: richardrigutins/replace-in-files@v2
+      with:
+        files: 'appsettings.Production.json'
+        search-text: 'DatabaseConnection'
+        replacement-text: ${{ secrets.CONNECTION_STRING }}
+
     - name: Build Project
       run: dotnet build --configuration Release
+      env: 
+          ASPNETCORE_ENVIRONMENT: Production
 
     - name: dotnet publish
-      run: dotnet publish -c Release
+      run: dotnet publish -c Release /p:EnvironmentName=SoccerQuizApiProd
+      env: 
+          ASPNETCORE_ENVIRONMENT: Production
 
     - name: Login to Droplet and Deploy to Server
       uses: garygrossgarten/github-action-scp@release
@@ -39,3 +50,13 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PASSWORD }}
         port: ${{ secrets.SSH_PORT }}
+
+    - name: Login to Droplet and Run Commands
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          sudo systemctl restart SoccerQuizApi.service
