@@ -1,16 +1,13 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.IdentityModel.Tokens;
 using SoccerQuizApi.Helper;
 using SoccerQuizApi.Models;
 using SoccerQuizApi.Services;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.Configure<SoccerQuizDBSettings>(
-    builder.Configuration.GetSection("SoccerQuizStoreDatabase"));
+builder.Configuration.GetSection("SoccerQuizStoreDatabase"));
 
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<QuizService>();
@@ -22,22 +19,36 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//React Cors
-builder.Services.AddCors();
+// CORS (ONLY ONCE)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://localhost:3000",
+                "https://vacdeakvarquiz.com",
+                "https://www.vacdeakvarquiz.com"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
-//Nginx Proxy
+// Nginx / reverse proxy
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
-        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
 });
 
 var app = builder.Build();
 
-//Nginx Proxy
+// Proxy headers FIRST
 app.UseForwardedHeaders();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -45,18 +56,15 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 
-//React Cors
-app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000"));
+// IMPORTANT: only ONE CORS middleware
+app.UseCors("CorsPolicy");
 
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
-

@@ -19,7 +19,7 @@ COPY --from=build /app/out ./
 
 # Expose the port your application will run on
 EXPOSE 5000
-ENV ASPNETCORE_URLS=http://*:5000
+ENV ASPNETCORE_URLS=https://*:5000
 
 # Start the application
 ENTRYPOINT ["dotnet", "SoccerQuizApi.dll"]

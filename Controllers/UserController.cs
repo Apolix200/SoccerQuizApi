@@ -21,6 +21,17 @@ namespace SoccerQuizApi.Controllers
             _resultService = resultService;
         }
 
+        [Route("[action]")]
+        [HttpGet]
+        public IActionResult HealthCheck()
+        {
+            return Ok(new
+            {
+                status = "Healthy",
+                timestamp = DateTime.UtcNow
+            });
+        }
+
         [HttpGet]
         public async Task<IEnumerable<User>> Get(string adminId)
         {
